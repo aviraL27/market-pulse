@@ -1,0 +1,17 @@
+{
+  "name": "market-pulse",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Market Pulse — Smart Market Price Tracker",
+  "scripts": {
+    "dev": "pnpm --filter @market-pulse/web --filter @market-pulse/api run --parallel dev",
+    "dev:web": "pnpm --filter @market-pulse/web dev",
+    "dev:api": "pnpm --filter @market-pulse/api dev",
+    "build": "pnpm run -r build",
+    "typecheck": "pnpm run -r typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
