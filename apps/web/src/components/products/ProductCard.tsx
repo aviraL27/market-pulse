@@ -4,6 +4,7 @@ import { Bookmark, TrendingDown, TrendingUp } from "lucide-react";
 import type { MarketProduct } from "@market-pulse/shared";
 import { useWatchlist, useWatchlistMutations } from "@/hooks/useProducts";
 import { useAuth } from "@/hooks/useAuth";
+import { safeImageUrl } from "@/lib/safeUrl";
 
 const sourceColors: Record<string, string> = {
   crypto: "bg-amber-100 text-amber-800",
@@ -27,6 +28,7 @@ export function ProductCard({
   const isSaved = watchlist?.some((w) => w.product_id === product.id);
   const change = product.price_change_pct;
   const isUp = change !== null && change >= 0;
+  const imageUrl = safeImageUrl(product.image_url);
 
   const toggleWatch = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -47,9 +49,9 @@ export function ProductCard({
       >
         <div className="mb-3 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            {product.image_url ? (
+            {imageUrl ? (
               <img
-                src={product.image_url}
+                src={imageUrl}
                 alt=""
                 className="h-10 w-10 rounded-full object-cover"
               />

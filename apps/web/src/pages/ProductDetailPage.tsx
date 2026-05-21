@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { PriceChart } from "@/components/products/PriceChart";
 import { Button } from "@/components/ui/Button";
 import { ProductCardSkeleton } from "@/components/ui/Skeleton";
+import { safeImageUrl } from "@/lib/safeUrl";
 
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -36,6 +37,7 @@ export function ProductDetailPage() {
   }
 
   const change = product.price_change_pct;
+  const imageUrl = safeImageUrl(product.image_url);
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
@@ -46,8 +48,8 @@ export function ProductDetailPage() {
       <div className="glass rounded-3xl p-8">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-4">
-            {product.image_url ? (
-              <img src={product.image_url} alt="" className="h-16 w-16 rounded-2xl object-cover" />
+            {imageUrl ? (
+              <img src={imageUrl} alt="" className="h-16 w-16 rounded-2xl object-cover" />
             ) : (
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-cream-dark text-2xl font-bold text-accent">
                 {product.name.charAt(0)}

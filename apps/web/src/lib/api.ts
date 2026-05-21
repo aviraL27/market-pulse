@@ -1,4 +1,4 @@
-import type { MarketProduct, TrendingSearch, UserProfile, WatchlistItem } from "@market-pulse/shared";
+import type { MarketProduct, TrendingSearch, WatchlistItem } from "@market-pulse/shared";
 import { supabase } from "./supabase";
 
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
@@ -39,8 +39,6 @@ async function request<T>(
 }
 
 export const api = {
-  health: () => request<{ status: string }>("/health"),
-
   dashboard: () =>
     request<{ data: MarketProduct[] }>("/api/products/dashboard"),
 
@@ -84,6 +82,4 @@ export const api = {
     request<{ data: unknown }>(`/api/watchlist/${encodeURIComponent(productId)}`, {
       method: "DELETE",
     }),
-
-  profile: () => request<{ data: UserProfile }>("/api/profile"),
 };

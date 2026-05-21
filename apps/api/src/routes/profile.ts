@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { profileUpdateSchema } from "@market-pulse/shared";
 import { requireAuth, type AuthVariables } from "../middleware/auth.js";
 import { createUserClient } from "../lib/supabase.js";
+import { clientErrorMessage } from "../lib/errors.js";
 
 const profile = new Hono<{ Variables: AuthVariables }>();
 
@@ -18,7 +19,7 @@ profile.get("/", async (c) => {
     .eq("id", user.id)
     .single();
 
-  if (error) return c.json({ error: error.message }, 500);
+  if (error) return c.json({ error: clientErrorMessage("Failed to load profile", error.message) }, 500);
   return c.json({ data });
 });
 
@@ -38,7 +39,7 @@ profile.patch("/", async (c) => {
     .select("id, name, email, avatar")
     .single();
 
-  if (error) return c.json({ error: error.message }, 500);
+  if (error) return c.json({ error: clientErrorMessage("Failed to update profile", error.message) }, 500);
   return c.json({ data });
 });
 

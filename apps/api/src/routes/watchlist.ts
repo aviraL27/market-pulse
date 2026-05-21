@@ -1,9 +1,10 @@
 import { Hono } from "hono";
-import { watchlistBodySchema } from "@market-pulse/shared";
+import { productIdSchema, watchlistBodySchema } from "@market-pulse/shared";
 import { requireAuth, type AuthVariables } from "../middleware/auth.js";
 import { createUserClient } from "../lib/supabase.js";
 import { getProductById } from "../services/market.js";
 import { upsertProducts } from "../services/products-db.js";
+import { clientErrorMessage } from "../lib/errors.js";
 
 const watchlist = new Hono<{ Variables: AuthVariables }>();
 
@@ -20,7 +21,7 @@ watchlist.get("/", async (c) => {
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (error) return c.json({ error: error.message }, 500);
+  if (error) return c.json({ error: clientErrorMessage("Failed to load watchlist", error.message) }, 500);
 
   const items = (data ?? []).map((row) => {
     const p = row.products as unknown as Record<string, unknown> | null;
@@ -68,14 +69,17 @@ watchlist.post("/", async (c) => {
 
   if (error) {
     if (error.code === "23505") return c.json({ data: { product_id: parsed.data.product_id } });
-    return c.json({ error: error.message }, 500);
+    return c.json({ error: clientErrorMessage("Failed to add to watchlist", error.message) }, 500);
   }
 
   return c.json({ data: { product_id: parsed.data.product_id, product } }, 201);
 });
 
 watchlist.delete("/:productId", async (c) => {
-  const productId = c.req.param("productId");
+  const parsed = productIdSchema.safeParse({ id: c.req.param("productId") });
+  if (!parsed.success) return c.json({ error: "Invalid product id" }, 400);
+
+  const productId = parsed.data.id;
   const token = c.get("accessToken")!;
   const user = c.get("user")!;
   const client = createUserClient(token);
@@ -86,7 +90,7 @@ watchlist.delete("/:productId", async (c) => {
     .eq("user_id", user.id)
     .eq("product_id", productId);
 
-  if (error) return c.json({ error: error.message }, 500);
+  if (error) return c.json({ error: clientErrorMessage("Failed to remove from watchlist", error.message) }, 500);
   return c.json({ data: { removed: productId } });
 });
 

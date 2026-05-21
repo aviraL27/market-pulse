@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
+import { secureHeaders } from "hono/secure-headers";
 import { config } from "./config.js";
 import { getRedis } from "./lib/redis.js";
 import { optionalAuth } from "./middleware/auth.js";
@@ -12,7 +13,10 @@ import profile from "./routes/profile.js";
 
 const app = new Hono();
 
-app.use("*", logger());
+if (config.nodeEnv === "development") {
+  app.use("*", logger());
+}
+app.use("*", secureHeaders());
 app.use(
   "*",
   cors({
@@ -25,7 +29,7 @@ app.use(
       ) {
         return origin;
       }
-      return config.corsOrigin;
+      return null;
     },
     allowHeaders: ["Content-Type", "Authorization"],
     allowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],

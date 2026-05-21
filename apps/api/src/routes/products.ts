@@ -17,11 +17,11 @@ import {
 } from "../lib/redis.js";
 import { syncProductView } from "../services/products-db.js";
 import type { AuthVariables } from "../middleware/auth.js";
-import { optionalAuth, requireAuth } from "../middleware/auth.js";
+import { requireAuth } from "../middleware/auth.js";
 
 const products = new Hono<{ Variables: AuthVariables }>();
 
-products.get("/dashboard", optionalAuth, async (c) => {
+products.get("/dashboard", async (c) => {
   const query = paginationSchema.safeParse(c.req.query());
   const limit = query.success ? query.data.limit : 24;
 
@@ -65,7 +65,7 @@ products.get("/top-viewed", async (c) => {
   return c.json({ data });
 });
 
-products.get("/search", optionalAuth, async (c) => {
+products.get("/search", async (c) => {
   const parsed = searchQuerySchema.safeParse(c.req.query());
   if (!parsed.success) {
     return c.json({ error: parsed.error.flatten().fieldErrors }, 400);
@@ -93,7 +93,7 @@ products.get("/recent-searches", requireAuth, async (c) => {
   return c.json({ data });
 });
 
-products.get("/:id", optionalAuth, async (c) => {
+products.get("/:id", async (c) => {
   const parsed = productIdSchema.safeParse({ id: c.req.param("id") });
   if (!parsed.success) return c.json({ error: "Invalid product id" }, 400);
 
@@ -104,8 +104,11 @@ products.get("/:id", optionalAuth, async (c) => {
   return c.json({ data: product });
 });
 
-products.post("/:id/view", optionalAuth, async (c) => {
-  const id = c.req.param("id");
+products.post("/:id/view", async (c) => {
+  const parsed = productIdSchema.safeParse({ id: c.req.param("id") });
+  if (!parsed.success) return c.json({ error: "Invalid product id" }, 400);
+
+  const id = parsed.data.id;
   const count = await incrementView(id);
   void syncProductView(id, count);
   return c.json({ data: { product_id: id, views_count: count } });
